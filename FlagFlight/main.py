@@ -151,6 +151,26 @@ class GameView:
             print(f"Could not load background image: {e}")
             self.background_image = None
 
+    def draw_heart(self, x, y, width, height):
+        # Draw a heart shape
+        heart_surface = pygame.Surface((width, height), pygame.SRCALPHA)
+
+        # Heart shape drawn with a polygon
+        heart_points = [
+            (width//2, height//5),
+            (width//4, 0),
+            (0, height//5),
+            (0, height//2),
+            (width//2, height),
+            (width, height//2),
+            (width, height//5),
+            (3*width//4, 0),
+            (width//2, height//5)
+        ]
+        pygame.draw.polygon(heart_surface, RED, heart_points)
+
+        self.screen.blit(heart_surface, (x, y))
+
     def draw_game(self, player, flags, game_state):
         # Draw background image instead of filling with white
         if self.background_image:
@@ -158,11 +178,10 @@ class GameView:
         else:
             self.screen.fill(WHITE)
 
-    # Rest of the drawing code remains the same
-    # Draw player
+        # Draw player
         pygame.draw.rect(self.screen, BLUE, (player.x, player.y, player.width, player.height))
 
-    # Draw flags
+        # Draw flags
         for flag in flags:
             color = self.colors.get(flag.country, RED)
             pygame.draw.rect(self.screen, color, (flag.x, flag.y, flag.width, flag.height))
@@ -170,9 +189,15 @@ class GameView:
             text_rect = text.get_rect(center=(flag.x + flag.width/2, flag.y + flag.height/2))
             self.screen.blit(text, text_rect)
 
-    # Draw score and lives
-        score_text = self.medium_font.render(f"Score: {player.score}  Lives: {player.lives}", True, BLACK)
+        # Draw score
+        score_text = self.medium_font.render(f"Score: {player.score}", True, BLACK)
         self.screen.blit(score_text, (10, 10))
+
+        # Draw hearts for lives
+        heart_width, heart_height = 25, 25
+        hearts_start_x = 160
+        for i in range(player.lives):
+            self.draw_heart(hearts_start_x + i * (heart_width + 5), 10, heart_width, heart_height)
 
         pygame.display.flip()
 
@@ -187,12 +212,12 @@ class GameView:
         title_rect = title.get_rect(center=(WIDTH/2, 80))
         self.screen.blit(title, title_rect)
 
-    # Question itself
+        # Question itself
         question = self.medium_font.render(flag.question, True, BLACK)
         question_rect = question.get_rect(center=(WIDTH/2, 150))
         self.screen.blit(question, question_rect)
 
-    # Answer options with enhanced styling
+        # Answer options with enhanced styling
         option_rects = []
         for i, option in enumerate(flag.options):
             # Button colors
@@ -201,34 +226,34 @@ class GameView:
             border_color = (40, 70, 120)  # Darker blue for border
             text_color = WHITE
 
-        # Get mouse position to check for hover effect
+            # Get mouse position to check for hover effect
             mouse_pos = pygame.mouse.get_pos()
 
-        # Create button rectangle
+            # Create button rectangle
             button_rect = pygame.Rect(WIDTH/2 - 180, 220 + i*85, 360, 65)
 
-        # Draw shadow first (offset rectangle)
+            # Draw shadow first (offset rectangle)
             shadow_rect = button_rect.copy()
             shadow_rect.x += 4
             shadow_rect.y += 4
             pygame.draw.rect(self.screen, (50, 50, 50), shadow_rect, border_radius=15)
 
-        # Draw main button
+            # Draw main button
             if button_rect.collidepoint(mouse_pos):
-            # Apply hover color
+                # Apply hover color
                 pygame.draw.rect(self.screen, hover_color, button_rect, border_radius=15)
             else:
-            # Apply normal color
+                # Apply normal color
                 pygame.draw.rect(self.screen, base_color, button_rect, border_radius=15)
 
-        # Draw button border
+            # Draw button border
             pygame.draw.rect(self.screen, border_color, button_rect, 2, border_radius=15)
 
-        # Draw a highlight at the top of the button
+            # Draw a highlight at the top of the button
             highlight_rect = pygame.Rect(button_rect.x + 5, button_rect.y + 5, button_rect.width - 10, 10)
             pygame.draw.rect(self.screen, (120, 180, 230), highlight_rect, border_radius=10)
 
-        # Option text with number
+            # Option text with number
             option_text = self.medium_font.render(f"{i+1}. {option}", True, text_color)
             option_rect = option_text.get_rect(center=button_rect.center)
             self.screen.blit(option_text, option_rect)
